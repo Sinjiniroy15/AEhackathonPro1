@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Secure Face Detection and Anonymization</title>
+  <style>
+    /* CSS styles for the page */
+    #videoElement {
+      width: 400px;
+      height: 300px;
+    }
+    #anonymizedImage {
+      display: none;
+      max-width: 400px;
+      max-height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Secure Face Detection and Anonymization</h1>
+
+  <!-- Video element to display webcam stream -->
+  <video id="videoElement" autoplay></video>
+
+  <!-- Image element to display the anonymized image -->
+  <img id="anonymizedImage" alt="Anonymized Image">
+
+  <script>
+    // JavaScript code for face detection and anonymization
+    const video = document.getElementById('videoElement');
+    const anonymizedImage = document.getElementById('anonymizedImage');
+
+    // Get webcam stream and display it in the video element
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        video.srcObject = stream;
+      })
+      .catch(function(error) {
+        console.log("Error accessing the webcam: " + error);
+      });
+
+    // Function to capture an image from the video stream
+    function captureImage() {
+      // Create a canvas element
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the current video frame on the canvas
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert the canvas image to base64 data URL
+      const imageDataURL = canvas.toDataURL('image/jpeg');
+
+      // Call the API endpoint to perform face detection and anonymization
+      processImage(imageDataURL);
+    }
+
+    // Function to call the backend API for face detection and anonymization
+    function processImage(imageDataURL) {
+      // Make a POST request to the backend API endpoint
+      fetch('/api/process-image', {
+        method: 'POST',
+        body: JSON.stringify({ image: imageDataURL }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        // Display the anonymized image
+        anonymizedImage.src = data.anonymizedImage;
+        anonymizedImage.style.display = 'block';
+      })
+      .catch(function(error) {
+        console.log("Error processing the image: " + error);
+      });
+    }
+  </script>
+</body>
+</html>
